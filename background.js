@@ -1,3 +1,5 @@
+// background.js
+
 // Cookie をまとめて取得→保存
 async function saveProfile(name) {
     const cookies = await chrome.cookies.getAll({ domain: "note.com" });
@@ -49,5 +51,30 @@ chrome.runtime.onMessage.addListener((msg, sender, resp) => {
     if (msg.action === "load") {
         loadProfile(msg.name).then(() => resp({ ok: true }));
         return true;
+    }
+});
+
+// Cookie 変更監視 → ログインを検知して自動作成
+chrome.cookies.onChanged.addListener(async info => {
+    if (
+        !info.removed &&
+        info.cookie.domain.includes("note.com") &&
+        info.cookie.name === "connect.sid"
+    ) {
+        // note.com タブを取得
+        const [tab] = await chrome.tabs.query({ url: "https://note.com/*" });
+        if (!tab) return;
+
+        // ページからユーザー名を取得
+        chrome.scripting.executeScript(
+            {
+                target: { tabId: tab.id },
+                func: () => document.querySelector('.o-UserIcon__name')?.textContent
+            },
+            async results => {
+                const name = results[0]?.result?.trim() || `user${Date.now()}`;
+                await saveProfile(name);
+            }
+        );
     }
 });

@@ -5,7 +5,8 @@
     "permissions": [
         "cookies",
         "storage",
-        "tabs"
+        "tabs",
+        "scripting"
     ],
     "host_permissions": [
         "https://note.com/*"

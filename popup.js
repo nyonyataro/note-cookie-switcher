@@ -40,7 +40,15 @@ async function refreshList() {
 // 保存
 document.getElementById('btnSave').onclick = () => {
     const name = document.getElementById('profileName').value.trim();
-    if (!name) return showToast('名前を入力してね');
+    // ユーザーが名前を入力していなければ、アカウント設定ページから取得を試みる
+    if (!name) {
+        // アカウント設定ページからユーザー名を取得して保存するアクションを送信
+        // 自動取得は機能しないため、手動入力を促すメッセージを表示
+        showToast('プロファイル名を入力してね'); // メッセージを修正
+        return;
+    }
+
+    // 名前が入力されていれば、その名前で保存
     chrome.runtime.sendMessage({ action: 'save', name }, r => {
         if (r.ok) { showToast(`${name} を保存`); refreshList(); }
     });
